@@ -1,4 +1,5 @@
 import argparse
+import os
 from datasets import load_dataset
 from pathlib import Path
 
@@ -10,7 +11,7 @@ def parse_arguments():
         Namespace: The parsed arguments with dataset name, cache directory, subset percentage, and subset name.
     """
     parser = argparse.ArgumentParser(description='Download, subset, and cache a dataset from Hugging Face.')
-    parser.add_argument('--dataset-name', type=str, default='facebook/winoground',
+    parser.add_argument('--dataset-name', type=str, default='kakaobrain/coyo-700m',
                         help='Name of the dataset to download')
     parser.add_argument('--cache-dir', type=Path, default=Path('./datasets_cache'),
                         help='Directory to cache the downloaded datasets')
@@ -42,7 +43,9 @@ def main():
     
     # Save the subset to disk
     subset_path = args.cache_dir / args.subset_name
-    subset.save_to_disk(subset_path)
-
+    subset.save_to_disk(
+        dataset_path = subset_path,
+        num_proc=os.cpu_count()
+        )
 if __name__ == "__main__":
     main()
