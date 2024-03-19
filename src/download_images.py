@@ -22,30 +22,34 @@ def parse_arguments():
 
 def download_image(image_data, image_directory):
     """
-    Downloads an image from a URL and saves it to the specified directory.
+    Attempts to download an image from a URL and saves it to the specified directory.
+    Skips the download on any error or if the content is not an image.
 
     Parameters:
         image_data (dict): A dictionary containing the 'url' and 'id' of the image.
         image_directory (Path): The directory where the image will be saved.
-
-    Returns:
-        str: A message indicating the success or failure of the download.
     """
     url = image_data['url']
     image_id = image_data['id']
     file_path = image_directory / f"{image_id}.jpg"
-    
+
     try:
         response = requests.get(url, stream=True, timeout=10)
-        if response.status_code == 200:
-            with open(file_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            return f"Downloaded {image_id}"
+        content_type = response.headers.get('Content-Type', '')
+
+        # Check if the response content type is an image
+        if 'image' in content_type:
+            if response.status_code == 200:
+                with open(file_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                print(f"Downloaded {image_id}")
+            else:
+                print(f"Failed {image_id}: Status code {response.status_code}")
         else:
-            return f"Failed {image_id}: Status code {response.status_code}"
-    except requests.exceptions.RequestException as e:
-        return f"Failed {image_id}: {e}"
+            print(f"Skipped {image_id}: Content is not an image")
+    except Exception as e:
+        print(f"Skipped {image_id} due to error: {e}")
 
 def download_images(dataset, image_directory):
     """
