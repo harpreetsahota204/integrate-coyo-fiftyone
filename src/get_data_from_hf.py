@@ -30,18 +30,21 @@ def main():
     # Ensure cache directory exists
     args.cache_dir.mkdir(parents=True, exist_ok=True)
     
+    print(f"Downloading and caching {args.dataset_name} to {args.cache_dir}")
     # Load the dataset
     dataset = load_dataset(
         args.dataset_name, 
         cache_dir=args.cache_dir,
         split="train")
-    
+    print("Dataset downloaded and cached")
     
     # Shuffle and select a subset
+    print(" Shuffling and selecting a subset...")
     subset_size = int(len(dataset) * (args.subset_percentage / 100))
     subset = dataset.shuffle(seed=42).select(range(subset_size))
     
     # Save the subset to disk
+    print(f"Saving subset to {args.cache_dir / args.subset_name}")
     subset_path = args.cache_dir / args.subset_name
     subset.save_to_disk(
         dataset_path = subset_path,
