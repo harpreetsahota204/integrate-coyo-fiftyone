@@ -3,7 +3,7 @@ import os
 import logging
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datasets import load_from_disk
+from datasets import Dataset, load_from_disk
 import requests
 from tqdm.auto import tqdm
 import shutil
@@ -16,10 +16,8 @@ def parse_arguments():
         argparse.Namespace: An object containing the parsed arguments, including the subset path and image directory.
     """
     parser = argparse.ArgumentParser(description='Download images for a specified dataset subset.')
-    parser.add_argument('--subset-path', type=str, required=True,
-                        help='Full path to the dataset subset')
-    parser.add_argument('--image-directory', type=str, default=None,
-                        help='Directory to save downloaded images')
+    parser.add_argument('--subset-path', type=str, required=True, help='Full path to the dataset subset')
+    parser.add_argument('--image-directory', type=str, default=None, help='Directory to save downloaded images')
     args = parser.parse_args()
     args.subset_path = Path(args.subset_path)
 
@@ -34,7 +32,12 @@ def parse_arguments():
     
     return args
 
-def download_image(image_data, image_directory):
+def setup_logging():
+    logging.basicConfig(filename='download_images.log', level=logging.INFO,
+                        format='%(asctime)s %(levelname)s:%(message)s')
+
+
+def download_image(image_data:dict, image_directory:Path):
     """
     Attempts to download an image from a URL and saves it to the specified directory.
     Skips the download on any error or if the content is not an image.
@@ -63,7 +66,7 @@ def download_image(image_data, image_directory):
     except Exception as e:
         return f"Skipped {image_id} due to error: {e}"
 
-def download_images(dataset, image_directory):
+def download_images(dataset:Dataset, image_directory:Path):
     """
     Downloads all images in the dataset using multiple threads.
 
@@ -83,9 +86,7 @@ def download_images(dataset, image_directory):
                 pbar.update(1)
                 logging.info(message)
 
-def setup_logging():
-    logging.basicConfig(filename='download_images.log', level=logging.INFO,
-                        format='%(asctime)s %(levelname)s:%(message)s')
+
 
 def main():
     """
