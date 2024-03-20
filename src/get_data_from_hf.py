@@ -15,7 +15,7 @@ def parse_arguments():
                         help='Name of the dataset to download')
     parser.add_argument('--cache-dir', type=Path, default=Path('./datasets_cache'),
                         help='Directory to cache the downloaded datasets')
-    parser.add_argument('--subset-percentage', type=float, default=5.0,
+    parser.add_argument('--subset-percentage', type=float, default=1.0,
                         help='Percentage of the dataset to keep after shuffling')
     parser.add_argument('--subset-name', type=str, default='coyo-tiny',
                         help='Name for the saved subset')
