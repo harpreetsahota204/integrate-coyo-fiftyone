@@ -1,11 +1,13 @@
 import os
-from pathlib import Path
+import magic
+import logging
 import fiftyone as fo
 import fiftyone.core.fields as fof
-import magic
+
+from pathlib import Path
 from datasets import Dataset, load_from_disk
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import logging
 
 def create_coyo_fiftyone_dataset() -> fo.Dataset:
 	"""
