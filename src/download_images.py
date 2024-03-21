@@ -1,12 +1,14 @@
-import argparse
 import os
-import logging
-from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from datasets import Dataset, load_from_disk
-import requests
-from tqdm.auto import tqdm
 import shutil
+import logging
+import argparse
+import requests
+
+from pathlib import Path
+from datasets import Dataset, load_from_disk
+
+from tqdm.auto import tqdm
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def parse_arguments():
     """
