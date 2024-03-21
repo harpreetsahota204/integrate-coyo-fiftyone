@@ -1,7 +1,8 @@
-import argparse
 import os
-from datasets import load_dataset
+import argparse
+
 from pathlib import Path
+from datasets import load_dataset
 
 def parse_arguments():
     """
