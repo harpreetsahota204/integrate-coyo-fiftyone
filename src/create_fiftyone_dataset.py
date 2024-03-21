@@ -11,7 +11,7 @@ def create_coyo_fiftyone_dataset() -> fo.Dataset:
 	"""
 	Creates schema for a COYO-Tiny FiftyOne dataset.
 	"""
-	dataset = fo.Dataset(name='COYO-Tiny')
+	dataset = fo.Dataset(name='COYO-Tiny', persistent=True, overwrite=True)
 
 	dataset.add_sample_field('image_path', fof.StringField)
 
