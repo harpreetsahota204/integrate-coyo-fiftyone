@@ -89,7 +89,7 @@ def create_coyo_fiftyone_dataset(name) -> fo.Dataset:
 	
 	return dataset
 
-def create_fo_sample(image: dict) -> fo.Sample:
+def create_fo_sample(image_directory, image: dict) -> fo.Sample:
 	"""
 	Creates a FiftyOne Sample from a given image entry with metadata and custom fields.
 
@@ -99,7 +99,7 @@ def create_fo_sample(image: dict) -> fo.Sample:
 	Returns:
 		fo.Sample: The FiftyOne Sample object with the image and its metadata.
 	"""
-	filepath = image['image_path']
+	filepath = str(image_directory) + '/' + str(image['id']) + '.jpg'
 	
 	# Attempt to get image size, falling back to 0 if not found.
 	try:
@@ -201,13 +201,12 @@ def main():
 	hf_dataset = load_from_disk(args.dataset_path)
 
 	logging.info('Creating FiftyOne samples...')
-	samples = [create_fo_sample(image) for image in hf_dataset]
+	samples = [create_fo_sample(args.image_directory, image) for image in hf_dataset]
 
 	logging.info('Adding samples to FiftyOne ...')
 	add_samples_to_fiftyone_dataset(dataset, samples)
 
 	logging.info('Dataset creation completed.')
-
 
 if __name__ == '__main__':
 	main()
