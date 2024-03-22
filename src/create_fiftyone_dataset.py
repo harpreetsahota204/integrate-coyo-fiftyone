@@ -1,7 +1,7 @@
 """
 Creates a local fiftyone dataset from a COYO-Tiny dataset.
 """
-
+import argparse
 import os
 import magic
 import logging
@@ -13,11 +13,41 @@ from datasets import Dataset, load_from_disk
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def create_coyo_fiftyone_dataset() -> fo.Dataset:
+def setup_logging():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def parse_arguments():
+    """
+    Parses command-line arguments for downloading, subsetting, and caching a dataset.
+
+    Returns:
+        Namespace: The parsed arguments with dataset name, cache directory, subset percentage, and subset name.
+    """
+    parser = argparse.ArgumentParser(description='Filters the dataset to include only those images that have been downloaded.')
+    parser.add_argument('--subset-path', type=str, required=True, help='Full path to the dataset')
+    parser.add_argument('--image-directory', type=str, default=None, help='Directory to downloaded images')
+    parser.add_argument('--dataset-name', type=str, default="coyo-tiny", required=True, help='Name of dataset')
+    
+    args = parser.parse_args()
+    
+    args.subset_path = Path(args.subset_path)
+	
+    args.dataset_path = args.subset_path / args.dataset_name
+
+    # If --image-directory is not specified, assume there is an 'images' directory within --subset-path
+    if args.image_directory is None:
+        args.image_directory = args.subset_path / 'images'
+    else:
+        args.image_directory = Path(args.image_directory)
+    
+    return args
+
+
+def create_coyo_fiftyone_dataset(name) -> fo.Dataset:
 	"""
 	Creates schema for a COYO-Tiny FiftyOne dataset.
 	"""
-	dataset = fo.Dataset(name='COYO-Tiny', persistent=True, overwrite=True)
+	dataset = fo.Dataset(name=name, persistent=True, overwrite=True)
 
 	dataset.add_sample_field('image_path', fof.StringField)
 
@@ -58,7 +88,6 @@ def create_coyo_fiftyone_dataset() -> fo.Dataset:
 	)
 	
 	return dataset
-
 
 def create_fo_sample(image: dict) -> fo.Sample:
 	"""
@@ -116,9 +145,9 @@ def create_fo_sample(image: dict) -> fo.Sample:
 		nsfw_score_gantman = None
 
 	if 'nsfw_score_opennsfw2' in image:
-		nsfw_score_gantman = image['nsfw_score_gantman']
+		nsfw_score_opennsfw2 = image['nsfw_score_gantman']
 	else:
-		nsfw_score_gantman = None
+		nsfw_score_opennsfw2 = None
 
 	if 'aesthetic_score_laion_v2' in image:
 		aesthetic_score_laion_v2 = image['aesthetic_score_laion_v2']
@@ -144,40 +173,39 @@ def create_fo_sample(image: dict) -> fo.Sample:
 
 	return sample
 
-  def add_samples_to_fiftyone_dataset(
-		dataset: fo.Dataset,
-		samples: list
+def add_samples_to_fiftyone_dataset(
+	dataset: fo.Dataset,
+	samples: list
 	):
-      """
-	   Creates a FiftyOne dataset from a list of samples.
+	"""
+	Creates a FiftyOne dataset from a list of samples.
 
-      Args:
-          samples (list): _description_
-          dataset_name (str): _description_
-    """
-    dataset.add_samples(samples, dynamic=True)
-    dataset.add_dynamic_sample_fields()
+	Args:
+		samples (list): _description_
+		dataset_name (str): _description_
+	"""
+	dataset.add_samples(samples, dynamic=True)
+	dataset.add_dynamic_sample_fields()
   
-
 def main():
 	"""
 	Main entry point for the script.
 	"""
-	logging.info('Loading dataset from disk...')
-	hf_dataset = load_from_disk(DATASET_DIR)
-	
-	logging.info('Getting image paths...')
-	image_id_to_path = get_image_paths(IMAGES_DIR)
-	
-	logging.info('Filtering dataset...')
-	filtered_dataset_with_paths = filter_and_add_paths(hf_dataset, image_id_to_path)
-	
-	logging.info('Creating FiftyOne samples...')
-	samples = [create_fo_sample(image) for image in filtered_dataset_with_paths]
+	setup_logging()
+	args = parse_arguments()
 	
 	logging.info('Creating FiftyOne dataset...')
-	create_fiftyone_dataset(samples, DATASET_NAME)
-	
+	dataset = create_coyo_fiftyone_dataset(args.dataset_name)
+
+	logging.info('Loading dataset from disk...')
+	hf_dataset = load_from_disk(args.dataset_path)
+
+	logging.info('Creating FiftyOne samples...')
+	samples = [create_fo_sample(image) for image in hf_dataset]
+
+	logging.info('Adding samples to FiftyOne ...')
+	add_samples_to_fiftyone_dataset(dataset, samples)
+
 	logging.info('Dataset creation completed.')
 
 
