@@ -1,3 +1,7 @@
+"""
+Creates a local fiftyone dataset from a COYO-Tiny dataset.
+"""
+
 import os
 import magic
 import logging

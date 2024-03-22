@@ -125,7 +125,7 @@ def main():
     setup_logging()
     args = parse_arguments()
     max_workers = os.cpu_count()
-    
+
     # Load the dataset
     dataset = load_from_disk(args.subset_path)
     
@@ -140,7 +140,7 @@ def main():
         max_workers=max_workers
     )
     # Cache the dataset to disk
-    cache_dataset(args.cache_dir, filtered_dataset_with_paths, args.dataset_name)
+    cache_dataset(args.cache_path, filtered_dataset_with_paths, args.dataset_name)
 
 if __name__ == '__main__':
     main()
